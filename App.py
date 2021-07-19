@@ -183,23 +183,12 @@ def mag_window():
             if values['-SBCOORDS-'] == 'Scalebar Coordinates' or values['-LEN-'] == '' or values['-UNIT-'] == '' or values['-SLLEN-'] == 'scale line length':
                 sg.popup('Please input the relevant data before moving on', title='Error', auto_close=True, auto_close_duration=3)
             else:
-                length = int(values['-LEN-']) / (1000 if values['-UNIT-'] == 'mm' else 1e6 if values['-UNIT-'] == 'μm' else 1e9)
-                mag = int(values['-SLLEN-']) / length
+                length = float(values['-LEN-']) / (1000 if values['-UNIT-'] == 'mm' else 1e6 if values['-UNIT-'] == 'μm' else 1e9)
+                magnification = length / float(values['-SLLEN-']) 
                 window.close()
-                return sbcoords, mag
+                return sbcoords, magnification
                  
     window.close()
-
-def red_borders():
-    '''
-    Colours the edges of the scale bar box in fig red 
-    '''
-    y1, y2, x1, x2 = sbcoords
-    
-    fig[y1, x1:x2+1] = [255, 0, 0]
-    fig[y2, x1:x2+1] = [255, 0, 0]
-    fig[y1:y2+1, x1] = [255, 0, 0]
-    fig[y1:y2+1, x2] = [255, 0, 0]
 
 def threshold_fig():
     '''
@@ -207,7 +196,6 @@ def threshold_fig():
     and creates a new figure highlighting the grain bounderies in red (dfig)
     '''
     tfig = sobel(rgb2gray(fig)) > float(values['-THRESH-'])
-    print(tfig)
 
     if 'sbcoords' in globals(): #if the scalebar has been selected
         y1, y2, x1, x2 = sbcoords
@@ -222,12 +210,13 @@ def threshold_fig():
 
 def artifact_fig():
     '''
-    Removes small particles from the thresholded figures (afig)
-    and and creates a new figure (dfig) showing the thresholded figure
-    in white and the artifact free figure in red
+    Removes small particles from the thresholded figures and skelotonizes
+    the grain boundaries (afig). Creates a new figure (dfig) showing the 
+    thresholded figure in white and the artifact free figure in red
     '''
-    afig = closing(tfig, disk(3))
-    afig = remove_small_objects(afig, min_size=int(values['-ARTS-']))
+    shape = disk(int(values['-GBWIDTH-']) + 2) #grain boundary width
+    afig = closing(tfig, shape)
+    afig = remove_small_objects(afig, min_size=int(values['-PARTICLES-']))
     afig = skeletonize(afig)
 
     dfig = np.zeros([image_height, image_length, 3], dtype=np.uint8)
@@ -291,7 +280,7 @@ def display_image(fig):
 
     cur_width, cur_height = img.size
 
-    new_width, new_height = 1280, 720
+    new_width, new_height = 1440, 810
     scale = min(new_height/cur_height, new_width/cur_width)
     img = img.resize((int(cur_width*scale), int(cur_height*scale)), Image.ANTIALIAS)
 
@@ -302,8 +291,7 @@ def display_image(fig):
     window['-IMAGE-'].update(data = bio.getvalue())
 
 def pixels_to_metres():
-    mag = int(values['-MAG-'])
-    gs = 1/mag * grain_size
+    gs = mag * grain_size
     return f'{gs*1e3:.3g}mm' if gs >= 1e-3 else f'{gs*1e6:.3g}μm' if gs >= 1e-6 else f'{gs*1e9:.3g}nm'
 
 #GUI layout
@@ -311,36 +299,40 @@ sg.theme('DarkBrown4')
 
 lcol = [
 
-    [sg.Frame('Stage', layout=[
+    [sg.Frame('Stage', pad=(0,5), layout=[
         [sg.Slider((1, 5), default_value=1, orientation='horizontal', disable_number_display=True, key='-STAGE-',
             enable_events=True, size=(35.3, 20), pad=(10,5))],
-        [sg.Text('Image{0}Threshold{0}Artifacts{0}Intercepts{0}Result'.format(" "*5))]])],
+        [sg.Text('Image{0}Threshold{0}Image Cleaning{0}Intercepts{0}Result'.format(" "*3))]])],
 
-    [sg.Frame('Select Images', layout=[
+    [sg.Frame('Select Images', pad=(0,5), layout=[
         [sg.Text('Folder'), sg.In(size=(30,1), enable_events=True ,key='-FOLDER-'), sg.FolderBrowse()],
         [sg.Listbox(values=[r'Grainsizer App\Coloured Test.jpg', r'Grainsizer App\Grey Test.png'],
             enable_events=True, size=(44, 10), key='-FILE LIST-')]])],
 
-    [sg.Frame('Magnification', layout=[
-        [sg.Text('This is the measured in pixels / metre')],
+    [sg.Frame('Magnification', pad=(0,5), layout=[
+        [sg.Text('This is the measured in metres / pixel')],
         [sg.Button('Calculate', key='-CALC-'), sg.Input(default_text='Magnification', size=(12,1), enable_events=True, key='-MAG-', pad=((166,10), (0,0)))]])],
 
-    [sg.Frame('Threshold', layout=[
+    [sg.Frame('Threshold', pad=(0,5), layout=[
         [sg.Text('The minimum colour gradient of the grain boundaries')],
         [sg.Slider((0.0, 0.5), default_value=0.25, resolution=0.001, orientation='horizontal', disable_number_display=True, size=(30,20), enable_events=True, key='-TSLIDER-'),
             sg.Input(default_text='0.25', size=(5,1), enable_events=True, pad=((10,10), (0,0)), key='-THRESH-')]])],
 
-    [sg.Frame('Artifacts', layout=[
-        [sg.Text('Maximum size in pixels of artifacts to be removed')],
-        [sg.Slider((0, 500), default_value=300, resolution=5, orientation='horizontal', disable_number_display=True, size=(30,20), enable_events=True, key='-ASLIDER-'),
-            sg.Input(default_text='300', size=(5,1), enable_events=True, pad=((10,10), (0,0)), key='-ARTS-')]])],
+    [sg.Frame('Image Cleaning', pad=(0,5), layout=[
+        [sg.Text('Maximum size in pixels of particles to be removed')],
+        [sg.Slider((0, 800), default_value=400, resolution=5, orientation='horizontal', disable_number_display=True, size=(30,20), enable_events=True, key='-PSLIDER-'),
+            sg.Input(default_text='400', size=(5,1), enable_events=True, pad=((10,10), (0,0)), key='-PARTICLES-')],
+    
+        [sg.Text('Approximate width in pixels of grain boundaries')],
+        [sg.Slider((1, 5), default_value=1, resolution=1, orientation='horizontal', disable_number_display=True, size=(30,20), enable_events=True, key='-GBWSLIDER-'),
+            sg.Input(default_text='1', size=(5,1), enable_events=True, pad=((10,10), (0,0)), key='-GBWIDTH-')]])],
 
-    [sg.Frame('Seperation', layout=[
+    [sg.Frame('Intercepts', pad=(0,5), layout=[
         [sg.Text('Distance in pixels between red intercept lines')],
         [sg.Slider((10, 200), default_value=100, resolution=10, orientation='horizontal', disable_number_display=True, size=(30,20), enable_events=True, key='-SSLIDER-'),
             sg.Input(default_text='100', size=(5,1), enable_events=True, pad=((10,10), (0,0)), key='-SEP-')]])],
 
-    [sg.Frame('Results', layout=[
+    [sg.Frame('Results', pad=(0,5), layout=[
         [sg.Column([[sg.Text('Average grainsize is not yet calculated'.ljust(100), key='-RES-')]], size=(340, 30), pad=(0,0))]])],
     
     [sg.Text('Made by Ayham Saffar. Check out my GitHub for more!', text_color='grey')]
@@ -420,13 +412,22 @@ while True:  # Event Loop
         else:
             try:
                 sbcoords, mag = mag_window()
-                window['-MAG-'].update(int(mag))
-                red_borders()
+                window['-MAG-'].update(f'{mag:.4g}')
+
+                #Colours scale bar borders red
+                y1, y2, x1, x2 = sbcoords
+                fig[y1, x1:x2+1] = [255, 0, 0]
+                fig[y2, x1:x2+1] = [255, 0, 0]
+                fig[y1:y2+1, x1] = [255, 0, 0]
+                fig[y1:y2+1, x2] = [255, 0, 0]
+
                 display_image(fig)
-            except:
+            
+            except: #if the mag window is closed without any data being entered
                 pass
     
     if event == '-MAG-':
+        mag = float(values['-MAG-'])
         if values['-STAGE-'] >= 4:
             window['-RES-'].update(f'Average grainsize is ' + pixels_to_metres())
 
@@ -445,22 +446,35 @@ while True:  # Event Loop
             values['-STAGE-'] = 2
             tfig, dfig = threshold_fig()
             display_image(dfig)
-        
 
-    if event == '-ASLIDER-' or event == '-ARTS-':
+    if event == '-PSLIDER-' or event == '-PARTICLES-':
 
-        if event == '-ASLIDER-':
-            window['-ARTS-'].update(int(values['-ASLIDER-']))
-            values['-ARTS-'] = int(values['-ASLIDER-'])
+        if event == '-PSLIDER-':
+            window['-PARTICLES-'].update(int(values['-PSLIDER-']))
+            values['-PARTICLES-'] = int(values['-PSLIDER-'])
 
-        if event == '-ARTS-':
-            window['-ASLIDER-'].update(int(values['-ARTS-']))
-            values['-ASLIDER-'] = int(values['-ARTS-'])
+        if event == '-PARTICLES-':
+            window['-PSLIDER-'].update(int(values['-PARTICLES-']))
+            values['-PSLIDER-'] = int(values['-PARTICLES-'])
 
         if 'afig' in globals(): #if an artifacted figure has been generated
             afig, dfig = artifact_fig()
             display_image(dfig)
 
+    if event == '-GBWSLIDER-' or event == '-GBWIDTH-':
+
+        if event == '-GBWSLIDER-':
+            window['-GBWIDTH-'].update(int(values['-GBWSLIDER-']))
+            values['-GBWIDTH-'] = int(values['-GBWSLIDER-'])
+
+        if event == '-GBWIDTH-':
+            window['-GBWSLIDER-'].update(int(values['-GBWIDTH-']))
+            values['-GBWSLIDER-'] = int(values['-GBWIDTH-'])
+
+        if 'afig' in globals(): #if an artifacted figure has been generated
+            afig, dfig = artifact_fig()
+            display_image(dfig)
+    
     if event == '-SSLIDER-' or event == '-SEP-':
 
         if event == '-SSLIDER-':
