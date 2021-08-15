@@ -582,8 +582,6 @@ while True:  # Event Loop
         if correcting == 'REMOVE':
             prev_shape = window['-IMAGE-'].draw_rectangle(top_left=(x-csize, y-csize), bottom_right=(x+csize, y+csize), line_color='red')
 
-
-
     if event == "-IMAGE-" and 'correcting' in globals():
         cfig, dfig = correct_fig(drawing=True)
         display_image(dfig)
