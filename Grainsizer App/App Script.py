@@ -28,7 +28,7 @@ def open_fig():
     if len(np.shape(fig)) == 2: #if image is in greyscale
         fig = gray2rgb(fig)
     
-    if len(np.shape(fig)) == 4: #if image has a transparency layer
+    if np.shape(fig)[2] == 4: #if image has a transparency layer
         fig = fig[:,:,:3]
 
     fig = np.array(fig, dtype=np.uint8)
