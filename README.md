@@ -66,7 +66,7 @@ After about 30 seconds and the program should pop up on your desktop!
 
 ## Usage ##
 
-Work through the left column from top to bottom to complete the process. Note the mouse controls on the startup logo. A gif showing this process can be downloaded from the Grainsizer X GitHub.
+Work through the left column from top to bottom to complete the process. Note the mouse controls on the startup logo. See the Grainsizer X Example gif for a quick demo.
 
 ### Tips
 
