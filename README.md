@@ -13,7 +13,7 @@ Grain size is found using the linear intercept method.
 
 Then the following equation is used.
 
-$$ average \ grain \ size (m) = \frac{total \ line \ length \ (px)}{number \ of \ intercepts} \times magnification \ (m / px)  $$
+average grain size (m) = magnification (m/px) * total line length (px) / number of intercepts  
 
 The app enables you to
 
