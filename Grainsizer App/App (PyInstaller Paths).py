@@ -41,7 +41,7 @@ def open_fig():
     if len(np.shape(fig)) == 2: #if image is in greyscale
         fig = gray2rgb(fig)
     
-    if len(np.shape(fig)) == 4: #if image has a transparency layer
+    if np.shape(fig)[2] == 4: #if image has a transparency layer
         fig = fig[:,:,:3]
 
     fig = np.array(fig, dtype=np.uint8)
@@ -326,7 +326,7 @@ lcol = [
 
     [sg.Frame('Select Images', pad=(0,5), layout=[
         [sg.Text('Folder'), sg.In(size=(30,1), enable_events=True ,key='-FOLDER-'), sg.FolderBrowse()],
-        [sg.Listbox(values=[PI_path(r'Grainsizer App\Coloured Test.jpg'), PI_path(r'Grainsizer App\Grey Test.png')],
+        [sg.Listbox(values=[PI_path(r'Coloured Test.jpg'), PI_path(r'Grey Test.png')],
             enable_events=True, size=(44, 10), key='-FILE LIST-')]])],
 
     [sg.Frame('Magnification', pad=(0,5), layout=[
@@ -374,7 +374,7 @@ img = sg.Graph(canvas_size=((1460, 990)), graph_bottom_left=(0, 0), graph_top_ri
             key="-IMAGE-", enable_events=True, background_color='white', drag_submits=True)
 
 window = sg.Window(title='Grainsizer X', layout=[[sg.Column(lcol, justification='left'), img]],
-            finalize=True, return_keyboard_events=True, icon=PI_path(r'Grainsizer App\Icon.ico'))
+            finalize=True, return_keyboard_events=True, icon=PI_path(r'Icon.ico'))
 
 #initializing new slider class that allows scroll wheel adjusting for each slider
 window['-STAGE-'].initial(window)
@@ -395,7 +395,7 @@ my_grey = '#252525'
 my_red = '#af0404'
 
 #adding logo to display
-filename = PI_path(r'Grainsizer App\Final Logo.jpg')
+filename = PI_path(r'Final Logo.jpg')
 fig, fig_height, fig_width, new_image_size = open_fig()
 display_image(fig)
 
