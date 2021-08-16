@@ -27,7 +27,7 @@ The grainsize is then worked out automatically by counting the number of interce
 
 ## Installation ##
 
-The standalone .exe file can be downloaded from my personal onedrive [here](www.x.com).
+The standalone .exe file can be downloaded from my personal onedrive [here](https://1drv.ms/u/s!AnQ8aqbFsILIge8pbSo0IAwAOHWXUw?e=6D9Gh0).
 
 To launch the program manually simply download the Grainsizer App folder and run the App Script python file.
 
