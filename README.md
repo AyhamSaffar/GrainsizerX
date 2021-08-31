@@ -82,7 +82,19 @@ This can be difficult as setting it too high means you will have to draw on extr
 
 If you encounter any bugs or are finding any part of the process difficult please do let me know by raising an issue on GitHub. I'll do the best i can to reply within 24 hours.
 
-Also if you have any ideas for new features or changes please also let me know. Origionally this was just a fun summer project but I am really keen to do all i can to make the app as useful as possible for any given workload.
+## Roadmap ##
+
+Right now i am working on simplifying the app's process and meeting industry measurement standards. Some of these new features include:
+
+- Automatic best guess thresholding
+
+- A remove small spikes button to reduce the error caused by over thresholding
+
+- Diagonal and circular red intercept lines to improve accuracy for non symetrical grains
+
+- A stats panel for exact accuracy information 
+
+If you have any ideas for new features or changes please also raise an issue on GitHub. Origionally this was just a fun summer project but I am really keen to do all i can to make the app as useful as possible for any given workload.
 
 ## Authors and acknowledgment ##
 
