@@ -96,6 +96,6 @@ Right now i am working on simplifying the app's process and meeting industry mea
 
 If you have any ideas for new features or changes please also raise an issue on GitHub. Origionally this was just a fun summer project but I am really keen to do all i can to make the app as useful as possible for any given workload.
 
-## Authors and acknowledgment ##
+## Authors and Acknowledgment ##
 
 This program was written by me Ayham Saffar however i could not have done it on my own. Thank you João Quinta da Fonseca from the University of Manchester for first teaching this method and giving feedback early on. Also thanks Mike & Jason from the PySimpleGUI GitHub for creating your brilliant library and all your great support.
